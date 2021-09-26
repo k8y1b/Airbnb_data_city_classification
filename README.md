@@ -1,11 +1,10 @@
 # Enter your title here
 
 ## Team members
-
-*
-*
-*
-
+Armandas Bartas
+Alex Romanus
+Gabriel Lanzaro
+Braeden Norman
 
 ## Description of the data 
 
