@@ -8,15 +8,12 @@ Braeden Norman
 
 ## Description of the data 
 
-(include the number of observations, number of predictors, what the different predictors are, etc.)
 Airbnb data for 280 000 listings including but not limited to: host info, geographical data, price, number of bedrooms, amenities, and review scores. There are 33 total columns, 25 predictors when we filter out review scores and ID's. 
 
 ## Precise description of the question(s)
 
 Wel will attempt to predict the user review score of AirBnB listings using the other variables in the provided dataset, including price, location, amenities, etc. 
 ## Why this question/dataset
-
-a few sentences describing why this question/dataset is interesting to you
 
 This data set is interesting to us because it combines our love for statistics with our love of vacation planning. Hopefully, intense statistical analysis of this data will provide insight while comparing prices and booking accomodations. 
 
