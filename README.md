@@ -1,4 +1,4 @@
-# Enter your title here
+# AirBnB Listings: An in depth dive into the world of short term sublets
 
 ## Team members
 Armandas Bartas
@@ -9,34 +9,37 @@ Braeden Norman
 ## Description of the data 
 
 (include the number of observations, number of predictors, what the different predictors are, etc.)
-
+Airbnb data for 280 000 listings including but not limited to: host info, geographical data, price, number of bedrooms, amenities, and review scores. There are 33 total columns, 25 predictors when we filter out review scores and ID's. 
 
 ## Precise description of the question(s)
 
-you are trying to answer 
-
+Wel will attempt to predict the user review score of AirBnB listings using the other variables in the provided dataset, including price, location, amenities, etc. 
 ## Why this question/dataset
 
 a few sentences describing why this question/dataset is interesting to you
 
+This data set is interesting to us because it combines our love for statistics with our love of vacation planning. Hopefully, intense statistical analysis of this data will provide insight while comparing prices and booking accomodations. 
+
 ## Reading list 
 
 (papers you may need to read)
+https://cran.r-project.org/web/packages/randomForest/randomForest.pdf
+
 ## Team contract. 
 
 For each area, write 1-2 sentences and including any rules to which your team collectively agrees (e.g. "We agree to make 1 commit per week." or "We agree to meet in the library every other Friday.")
 
 **Participation**  
-We agree to ...
+We agree to divide the work fairly and equally, and to each complete our own portions within agreed upon timeframes. 
 
 **Communication**  
-We agree to ...
+We agree to check our slack group chat at least once per two days.
 
 **Meetings**  
-We agree to ...
+We agree to meet twice per project checkpoint. Once to divide our task, and again to combine our work.
 
 **Conduct**  
-We agree to ...
+We agree to help each other when stuck and to treat each other with respect and dignity. 
 
 ***
 Do not make any changes from here on. Only the TAs will edit the following.
