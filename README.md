@@ -1,26 +1,29 @@
 # AirBnB Listings: An in depth dive into the world of short term sublets
 
 ## Team members
-Armandas Bartas
-Alex Romanus
-Gabriel Lanzaro
+Armandas Bartas\n
+Alex Romanus\n
+Gabriel Lanzaro\n
 Braeden Norman
 
 ## Description of the data 
 
-Airbnb data for 280 000 listings including but not limited to: host info, geographical data, price, number of bedrooms, amenities, and review scores. There are 33 total columns, 25 predictors when we filter out review scores and ID's. 
+Airbnb data for 280 000 listings including, but not limited to: host info, geographical data, price, number of bedrooms, amenities, and review scores. There are 33 total columns, 25 predictors when we filter out review scores and ID's. 
 
 ## Precise description of the question(s)
 
 Wel will attempt to predict the user review score of AirBnB listings using the other variables in the provided dataset, including price, location, amenities, etc. 
+
 ## Why this question/dataset
 
-This data set is interesting to us because it combines our love for statistics with our love of vacation planning. Hopefully, intense statistical analysis of this data will provide insight while comparing prices and booking accomodations. 
+This dataset is interesting to us because it combines our love for statistics with our love for vacation planning. Hopefully, intense statistical analysis of this data will provide insight while comparing prices and booking accomodations. 
 
 ## Reading list 
 
 (papers you may need to read)
 https://cran.r-project.org/web/packages/randomForest/randomForest.pdf
+https://www.emerald.com/insight/content/doi/10.1108/JHTT-02-2019-0023/full/html
+https://www.emerald.com/insight/content/doi/10.1108/IJCHM-12-2013-0542/full/html
 
 ## Team contract. 
 
