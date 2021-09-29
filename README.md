@@ -1,10 +1,7 @@
 # AirBnB Listings: An in depth dive into the world of short term sublets
 
 ## Team members
-Armandas Bartas\n
-Alex Romanus\n
-Gabriel Lanzaro\n
-Braeden Norman
+Armandas Bartas, Alex Romanus, Gabriel Lanzaro, Braeden Norman
 
 ## Description of the data 
 
