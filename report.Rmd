@@ -1,5 +1,5 @@
 ---
-title: "AirBnB Listings: An in depth dive into the world of short term sublets"
+title: "AirBnB Listings: An in depth dive into the world of short-term sublets"
 author: 'Armandas Bartas, Alex Romanus, Braeden Norman, Gabriel Lanzaro'
 date: "`r Sys.Date()`"
 output: 
@@ -10,38 +10,93 @@ output:
     toc: FALSE
 ---
 
-
-```{r setup, warning=FALSE, message=FALSE}
+```{r setup, warning=FALSE, message=FALSE, echo=FALSE}
 library(tidyverse)
 library(testthat)
 listings <- read.csv("data/Listings_updated.csv")
 amenitiesCount <- read.csv("data/amenities_count.csv")
+require(gridExtra)
 ```
 
+\maketitle
+\section{Motivation}
 
+This dataset is interesting to us because it combines our love for statistics with our love for vacation planning. Statistical analysis of this data will provide insights while comparing prices and booking accommodations.
 
+\maketitle
+\section{Introduction}
 
+This project aims to investigate  AirBnb listings and obtain insights into the most important features of short-term sublets. More specifically, the goal of this project is to classify the cities based on different attributes. The dataset, which was obtained from Kaggle, contains 10 cities from very distinct parts of the world: Bangkok, Cape Town, Hong Kong, Istambul, Mexico City, New York, Paris, Rio de Janeiro, Rome, and Sydney. The Airbnb data contains 280 000 listings including, but not limited to: host info, geographical data, price, number of bedrooms, amenities, and review scores.
 
+The analysis can then reveal important aspects regarding how different attributes may characterize each city, for example: \newline
+- Which amenities are more important for each city when selecting a property?\newline
+- Does the host profile differ among different cities?\newline
+- Which types of accommodation are more common depending on the city?\newline
+- Can we predict the city based on different preferences related to the place to stay?
 
-::: {.solbox data-latex=""}
+\maketitle
+\section{Exploratory Analysis}
 
+Several insights can be obtained by plotting different variables against the cities. For example, the next figure shows boxplots that present (1) the number of guests the listing accommodates and (2) for how long the host has been renting properties in AirBnB. The first boxplot indicates that cities such as Cape Town, Rio de Janeiro, and Rome tend to offer listings with more guests, which might be suitable for group or family trips. For Hong Kong, however, the accommodations tend to be for fewer guests, which shows that listings might be tiny and that the city is more appropriate for business trips. In addition, the second boxplot shows that AirBnb has been used in some cities for more time than in others. For example, New York and Paris have an average for the number of days as a host variable that is considerably higher than the average for Istambul. It might show that AirBnB has only been widely used in Istambul for a shorter amount of time. 
+
+```{r accomodates-and-days, echo=FALSE, warning=FALSE, message=FALSE, out.width="80%"}
+
+p1 <- ggplot(listings, aes(city, accommodates)) + geom_boxplot() +
+  xlab('City') + ylab('Accomodates') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+time_differences <- difftime(Sys.Date(),as.Date(listings$host_since), units = c("days"))
+listings$time_diff <- as.numeric(time_differences)
+
+p2 <- ggplot(listings, aes(city, time_differences)) + geom_boxplot() +
+  xlab('City') + ylab('Days as a Host') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+grid.arrange(p1, p2, ncol=2)
+
+```
+
+The next plot shows the proportion per city of (1) response time and (2) room type for different categories. The first plot shows that hosts in Mexico City and Hong Long tend to have the highest response times, whereas hosts in Paris and New York have the lowest response times. The second plot shows that most of the accommodations in Paris and Cape Town are for the entire place, and most of the accommodations in Hong Kong are for private rooms. This room type analysis for Hong Kong is consistent with the previous plots (i.e., the number of guests a property can accommodate). The room type variable can also provide information regarding the trip purpose (e.g., business, family, group). Cities such as Paris are preferred for group trips, whereas Hong Kong is more appropriate for business trips.
+
+```{r response-room, echo=FALSE, warning=FALSE, message=FALSE, out.width="80%"}
+
+p1 <- ggplot(listings, aes(x = city, fill = factor(host_response_time,
+                                               levels = c("", "a few days or more", "within a day", "within a few hours", "within an hour"),
+                                               labels = c("not informed", "a few days or more", "within a day", "within a few hours", "within an hour")))) +
+  geom_bar(position = "fill") +
+  labs(y = "Proportion", fill = "Response Time", x = "City") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), legend.position="bottom", legend.direction="vertical", legend.key.size = unit(0.2, "cm"))
+
+### Type of room
+p2<- ggplot(listings, aes(x = city, fill = room_type)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Proportion", fill = "Room Type", x = "City") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), legend.position="bottom", legend.direction="vertical", legend.key.size = unit(0.2, "cm"))
+
+grid.arrange(p1, p2, ncol=2)
+
+```
 
 \maketitle
 \section{Exploring Amenities}
-In the original dataset there is a columns that has a list of string of all amenities a listing has. Here we explored these lists to extract useful information for our predictions.\newline
+In the original dataset, there is a column with a list of string of possible amenities a listing has. Here we explored these lists to extract useful information for our predictions. For example, these are the first 5 observations:
+
 `r listings$amenities[1:5]`\newline
-This is the first 5 observation. We found the list of all the amenities and graphically determined which to include in update dataset. For each included amenities, we will add a new columns labeling whether this listing has this amenities or not. (1/0)
 
-```{r exploring-all-amenities, out.width="80%"}
+We found the list of all  amenities and graphically determined which to include in the updated dataset. For each included amenity, we added new columns labeling whether this listing has these amenities or not.
 
+The first graph below shows the count of all amenities. There are `r nrow(amenitiesCount)` different amenities in the dataset. A lot of them only have a count of 1 so, to better view the distribution, we removed all amenities that had below 100 observations. The second graph gives all amenities with a count over 100. The top red line is at the total number of observations in the dataset, and the bottom line is at 10,000. 10k was decided to be a good number to remove all amenities with less observations. This would leave us with a more reasonable size of amenities to add to our dataset as new columns (60 new columns after reduction).
+
+```{r exploring-all-amenities, echo=FALSE}
+par(mfrow = c(1, 2)) 
 barplot(amenitiesCount$V2, ylim = c(0, 280000), main = "All amenities"
-        , xlab = "Amenities Index", ylab = "Count")
+        , xlab = "Amenities Index", ylab = "Count", cex.main = 0.8)
 lines((integer(279712) + 1)*279712, col = "red")
 lines((integer(279712) + 1)*10000, col = "red")
 
 noOnes <- amenitiesCount$V2[-which( amenitiesCount$V2 < 100)]
 barplot(noOnes, ylim = c(0, 280000), main = "Amenities with above 100 observations"
-        , xlab = "Amenities Index", ylab = "Count")
+        , xlab = "Amenities Index", ylab = "Count", cex.main = 0.8)
 lines((integer(279712) + 1)*279712, col = "red")
 lines((integer(279712) + 1)*10000, col = "red")
 
@@ -49,20 +104,19 @@ reducedAmenities <- amenitiesCount$V1[which(amenitiesCount$V2 > 10000)]
 reducedAmenitiesCount <- amenitiesCount$V2[which(amenitiesCount$V2 > 10000)]
 ```
 
+All observations were updated with new columns: 1 for has amenity and 2 for not. Here is a quick preview of what the updated dataset looks like.
 
-
-The first graph shows the count of all amenities. There is `r nrow(amenitiesCount)` different amenities in the dataset. A lot of them only have a count of 1, so to better view the distribution we removed all amenities that had below 100 observations. The second graph gives all amenities with a count over 100. The top red line is at total observation of dataset, and the bottom line is at 10,000. 10k was decided to be a good number to remove all amenities with less observations, because this would leave us with a more reasonable size of amenities to add to our dataset as new columns (60 after reduction). All observations we updated with a new columns, 1 for has amenity and 2 for not. 
-```{r new-listings}
+```{r new-listings, echo=FALSE}
   listings[1:5,c(2,4,16,35:38)]
 ```
 
-Quick preview of what the updated dataset looks like.\newline
-Below are the percent TRUE/FALSE values of the selected amenities for each city. Since we are trying to determine the city, based on the listings, seeing the difference of amenities by city will give us an understanding of how useful these amenities will be in our model. The graphs selected were: \newline
-`r reducedAmenities[c(1,6,10,14,22,36,54,58)]` \newline
-The usefulness was determine by seeing the distinct difference between each city. For example, in Heating we only have 4 cities that have almost no listings with heating (Bangkok, Hong Kong, Mexico City, and Rio de Janeiro) If we also look at Air conditioning we see that only 2 maybe 3 have little to no listings with AC. (Cape Town, Mexico City, and Paris) Now if we take these two into account we can see that given no AC and Heating, we can be almost positive the listing is Mexico City. 
+Below are the percent TRUE/FALSE values of the selected amenities for each city. Since we are trying to determine the city, based on the listings, seeing the different amenities by city will give us an understanding of how useful these amenities will be in our model. The graphs selected were:
 
+`r reducedAmenities[c(1,6,10,14,22,36,54,58)]`
 
-```{r exploring-data, out.width="50%"}
+For example, in Heating, we only have 4 cities that have almost no listings with heating (Bangkok, Hong Kong, Mexico City, and Rio de Janeiro) If we also look at Air conditioning, we see that only 2, maybe, 3 have little to no listings with AC (Cape Town, Mexico City, and Paris). Now, if we take these two into account, we can see that given no AC and no Heating, we can be almost positive the listing is Mexico City. 
+
+```{r exploring-data, out.width="50%", echo=FALSE}
 selected <- c(1,6,10,14,22,36,54,58)
 knitr::opts_chunk$set(fig.width=unit(18,"cm"), fig.height=unit(5,"cm"))
 for (ii in selected) {
@@ -76,12 +130,6 @@ for (ii in selected) {
     print(plt)
 }
 
-
 ```
 
-
-
-
-
-:::
 
