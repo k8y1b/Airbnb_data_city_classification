@@ -132,4 +132,74 @@ for (ii in selected) {
 
 ```
 
+\maketitle
+\section{Exploring Interactions}
+
+The addition of interaction terms is a form of basis expansion. Interaction terms model the change in response variable against the change in a product or quotient of two or more predictor variables. They help in the case where the added effects of two predictor variables do not stack linearly, rather, they compound on each other. The right interaction term can improve a model, but adding too many terms, or the wrong term, increases variance and can actually worsen out of sample performance.
+
+\maketitle
+\subsection{Method}
+
+The method was to systematically fit a seperate model for each interaction term. The interaction terms used were products of pairs of predictor variables. As such, the categorical variables were not included in the analysis of interactions. The true/false variables were converted into binary 0/1. Some data cleaning had to be done: ListingIDand name were removed as they uniquely identify the corresponding observation, geographical information such as neighbourhood, longitude, latitude, district, and location were removed as they also eliminate the challenge of predicting the city. Amenities was removed for this analysis as it provided too much trouble. Each combination of amenities is considered a unique categorical variable. Overcoming this challenge is covered within this report, but it was not necessary for this particular analysis. The data set was cut down from ~300k observations to 1k observations, blocked by city and randomized, with 100 observations for each one. This was done to expediate the process of fitting so many models. The model used was a basic LDA model over all of the variables, minus the aforementioned removals. For each model, one unique product of two numeric variables was added to the predictor space, and the misclassification rate was recorded.
+
+\maketitle
+\subsection{Results}
+
+The best performing models are seen in the table below. The default (no interaction terms added) misclassification rate was 0.013. There were two interaction terms that provided a rate of 0.008. The first was host_response_rate * minimum_nights, and the second was host_identity_verified * review_scores_communication. Five interaction terms gave a misclassification rate of 0.009, three of which contained the variable host_is_superhost, and the other two contained the variable bedrooms. Of these seven interaction terms, four contained a binary 0/1 variable, essentially meaning that the other term in the interaction had a different effect on the city depending on some binary condition. 
+
+```{r echo=FALSE}
+
+# table <- misclasserr[order(as.numeric(misclasserr[,1])),][1:7,]
+# colnames(table) <- c("misclassification error", "model formula")
+
+
+table <- rbind(c("misclass error", "model formula"),                                                    
+c("0.008","city ~ . + host_response_rate * minimum_nights"),                
+c("0.008","city ~ . + host_identity_verified * review_scores_communication"),
+c("0.009","city ~ . + host_is_superhost * host_total_listings_count"),      
+c("0.009","city ~ . + host_is_superhost * price"),                           
+c("0.009","city ~ . + host_is_superhost * review_scores_location"),          
+c("0.009","city ~ . + bedrooms * maximum_nights"),        
+c("0.009","city ~ . + bedrooms * review_scores_location"))
+table
+
+```
+
+```{r, fig.width=10,fig.height=8, echo = FALSE}
+ggplot(listings, aes(host_response_rate, minimum_nights, colour = city)) + 
+  geom_point() + 
+  xlab('Host response rate') + ylab('Minimum nights') +
+  ylim(0, 1500) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+ggplot(listings, aes(city, host_response_rate * minimum_nights)) + geom_boxplot() +
+  xlab('Host response rate * minimum nights interaction term') + ylab('distribution, by city') +
+  ylim(0, 100) + 
+  labs(caption = "As we can see, this interaction term helps identify observations as New York or Hong Kong Airbnbs; because their distributions are \n much higher than the other cities in the dataset. Adding this interaction term to the model may improve the models ability to correctly \n identify these two cities, as well as deter it from misidentifying other cities as New York or Hong Kong.") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1),
+        plot.caption = element_text(hjust = 0.5))
+
+
+
+
+
+ggplot(listings[-which(listings$maximum_nights > (10^3)),], aes(bedrooms, maximum_nights, colour = city)) + 
+  geom_point() + 
+  xlab('Number of bedrooms') + ylab('Maximum nights stay') +
+  labs(caption = "We can see that the observations cluster along the axes of the plot, resulting on low product interaction terms. We see a cluster of \n observations coloured 'Paris' in the bottom corner, implying that Parisian Airbnbs have low values for their interaction terms.\n Looking at the next plot, a boxplot of the interaction term by city, we see this is confirmed.") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1),
+        plot.caption = element_text(hjust = 0.5))
+
+ggplot(listings, aes(city, bedrooms * maximum_nights)) + geom_boxplot() +
+  xlab('Bedrooms * maximum nights interaction term') + ylab('distribution, by city') +
+  ylim(0, 1000) + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+
+
+
+```
+
+
+
 
