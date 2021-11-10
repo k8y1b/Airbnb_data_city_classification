@@ -5,7 +5,13 @@ Armandas Bartas, Alex Romanus, Gabriel Lanzaro, Braeden Norman
 
 ## Description of the data 
 
-Airbnb data for 280 000 listings including, but not limited to: host info, geographical data, price, number of bedrooms, amenities, and review scores. There are 33 total columns, 25 predictors when we filter out review scores and ID's. 
+Airbnb data for 280 000 listings including, but not limited to: host info, geographical data, price, number of bedrooms, amenities, and review scores. There are 33 total columns, 25 predictors when we filter out review scores and ID's.
+
+## How to get data
+
+Download folder from here: 
+https://drive.google.com/drive/folders/1s12BdUMhuM4MeUU5rPIP-T3ydkJ0SyAn?usp=sharing
+Replace the files in the data Folder with the download folder.
 
 ## Precise description of the question(s)
 
