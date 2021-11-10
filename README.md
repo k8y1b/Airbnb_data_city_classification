@@ -9,8 +9,7 @@ Airbnb data for 280 000 listings including, but not limited to: host info, geogr
 
 ## How to get data
 
-Download folder from here: 
-https://drive.google.com/drive/folders/1s12BdUMhuM4MeUU5rPIP-T3ydkJ0SyAn?usp=sharing
+Download folder from [here](https://drive.google.com/drive/folders/1s12BdUMhuM4MeUU5rPIP-T3ydkJ0SyAn?usp=sharing)
 Replace the files in the data Folder with the download folder.
 
 ## Precise description of the question(s)
