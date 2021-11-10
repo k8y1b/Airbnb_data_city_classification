@@ -106,9 +106,10 @@ reducedAmenitiesCount <- amenitiesCount$V2[which(amenitiesCount$V2 > 10000)]
 
 All observations were updated with new columns: 1 for has amenity and 2 for not. Here is a quick preview of what the updated dataset looks like.
 
-```{r new-listings, echo=FALSE}
-  listings[1:5,c(2,4,16,35:38)]
-```
+The first graph shows the count of all amenities. There is `r nrow(amenitiesCount)` different amenities in the dataset. A lot of them only have a count of 1, so to better view the distribution we removed all amenities that had below 100 observations. The second graph gives all amenities with a count over 100. The top red line is at total observation of dataset, and the bottom line is at 10,000. 10k was decided to be a good number to remove all amenities with less observations, because this would leave us with a more reasonable size of amenities to add to our dataset as new columns (60 after reduction). All observations we updated with a new columns, 1 for has amenity and 2 for not. 
+```{r new-listings}
+listings[1:5,c(2,4,16,35:38)]
+
 
 Below are the percent TRUE/FALSE values of the selected amenities for each city. Since we are trying to determine the city, based on the listings, seeing the different amenities by city will give us an understanding of how useful these amenities will be in our model. The graphs selected were:
 
@@ -196,10 +197,77 @@ ggplot(listings, aes(city, bedrooms * maximum_nights)) + geom_boxplot() +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 
+```
+\section{Exploring Price}
+```{r exploring-data-price, message=FALSE, warning=FALSE}
+library(dplyr)
+df <- data.frame(listings)
+
+df <- (df %>% group_by(city) %>% mutate(price_standardized = price/max(price)))
+
+ggplot(df, aes(city, price_standardized)) + geom_boxplot() + xlab('City') +
+  ylab('Price') + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+```
+Since prices of the Airbnb’s are recorded in each city’s country’s own currency, to make the prices comparable, it makes sense to standardize the variable. The best way to make all listings’ prices comparable is to divide each observation’s price by it’s city’s costliest Airbnb. That way, the spreads of the data separated by city are preserved while making the price variable unitless to allow for comparison of observations between cities.
+
+\section{Exploring Minimum Nights}
+
+```{r exploring-data-minimum-nights, message=FALSE, warning=FALSE}
+ggplot(df, aes(city, minimum_nights)) + geom_boxplot() +
+xlab('City') + ylab('Minimum Nights Needed to Rent') +
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+index_to_remove <- df[df$minimum_nights > 9000,]$listing_id
+df <- subset(df, listing_id != index_to_remove)
+
+ggplot(df, aes(city, log(minimum_nights))) + geom_boxplot() +
+xlab('City') + ylab('Log Minimum Nights Needed to Rent') +
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 
 ```
+Since no other observations has anywhere near 10000 minimum nights required to rent, which no person would realistically want to rent anyway, it is reasonable to remove this observation from the data set. Furthermore, there are still many outliers, i.e values above the whiskers, preventing the spread from being reasonably assessed, so we apply a log transformation to minimum_nights to make it more readable.
 
+Upon transforming the data, it is clear that most cities have many listings with very few minimum nights required to rent, as many of their boxes show Q1’s hovering right at 0. New York is the only exception, with
+a Q1 value of about 1.5 log days, or about 4.5 days, and a median of about 12 days. Conversely, Istanbul and Bangkok have medians hovering just above 0. These distinct spreads of values of minimum days may make Istanbul, Bangkok, and especially New York much easier to predict if this variable is significant in our
+model.
+
+
+\section{Exploring Review Score of Overall Rating}
+
+```{r exploring-data-review-scores-rating, message=FALSE, warning=FALSE}
+df_no_NAN <- df[!is.na(df$review_scores_rating),]
+
+ggplot(df_no_NAN, aes(city, review_scores_rating)) + geom_boxplot() +
+xlab('City') + ylab('Review Scores of Listings Overall Ratings') +
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+```
+Many observations had to be removed from the data to accommodate the large amount of NANs in the
+review_score_ratings variable. 
+
+The high medians of and Q1 values of Cape Town and Rio suggest these cities may be easier to predict than the rest. Hong Kong also seems to have a significantly lower rating spread of ratings than the rest of the cities, suggesting it may also be easier to predict than the rest. 
+
+However, unless the model used is sensitive to subtle differences in the values of these ratings, it like won’t be very useful for classification. This is because the spreads of the data for these reviews are all very similar, with almost all quantilies above a score of 90. This contradicts what we originally thought, as we predicted that overall reviews may differ significantly from city to city. Generally, it seems Airbnb customers seem to give high reviews.
+
+
+\section{Exploring Review Scores of Location}
+
+```{r exploring-data-review-scores-location, message=FALSE, warning=FALSE}
+df_no_NAN <- df[!is.na(df$review_scores_location),]
+library(janitor)
+
+tabyl(df_no_NAN, city, review_scores_location)
+
+tabyl(df_no_NAN, city, review_scores_location)%>%
+adorn_percentages("col") %>%
+adorn_pct_formatting(digits = 2)
+```
+Similar to overall review scores, many observations had to be removed to analyze review_scores_location due to the high volume of NANs. Some cities, such as Hong Kong, were significantly effected, as it is far fewer location reviews than, say, Paris. 
+
+The largest proportion of high reviews, i.e 9s and 10s, belong to Paris at 24.99% and 26.09% respectively. Also, Istanbul has large shares of low reviews, with 23.15%, 28.57%, and 22.22% of 2s, 3s, and 4s respectively,
+compared to th other cities. These heavy tails may make it easier to classify these two cities if review scores based on location is a significant predictor in our model.
 
 
 
