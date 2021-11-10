@@ -138,19 +138,19 @@ for (ii in selected) {
 \maketitle
 \section{Exploring Interactions}
 
-The addition of interaction terms is a form of basis expansion. Interaction terms model the change in response variable against the change in a product or quotient of two or more predictor variables. They help in the case where the added effects of two predictor variables do not stack linearly, rather, they compound on each other. The right interaction term can improve a model, but adding too many terms, or the wrong term, increases variance and can actually worsen out of sample performance.
+The addition of interaction terms is a form of basis expansion. Interaction terms model the change in response variables against the change in a product or quotient of two or more predictor variables. They help in the case where the added effects of two predictor variables do not stack linearly, rather, they compound on each other. The right interaction terms can improve a model, but adding too many terms, or the wrong terms, increase variance and can actually worsen out of sample performance.
 
 \maketitle
 \subsection{Method}
 
-The method was to systematically fit a seperate model for each interaction term. The interaction terms used were products of pairs of predictor variables. As such, the categorical variables were not included in the analysis of interactions. The true/false variables were converted into binary 0/1. Some data cleaning had to be done: ListingIDand name were removed as they uniquely identify the corresponding observation, geographical information such as neighbourhood, longitude, latitude, district, and location were removed as they also eliminate the challenge of predicting the city. Amenities was removed for this analysis as it provided too much trouble. Each combination of amenities is considered a unique categorical variable. Overcoming this challenge is covered within this report, but it was not necessary for this particular analysis. The data set was cut down from ~300k observations to 1k observations, blocked by city and randomized, with 100 observations for each one. This was done to expediate the process of fitting so many models. The model used was a basic LDA model over all of the variables, minus the aforementioned removals. For each model, one unique product of two numeric variables was added to the predictor space, and the misclassification rate was recorded.
+The method was to systematically fit a separate model for each interaction term. The interaction terms used were products of pairs of predictor variables. As such, the categorical variables were not included in the analysis of interactions. The true/false variables were converted into binary 0/1. Some data cleaning had to be done: ListingID and name were removed as they uniquely identify the corresponding observation, geographical information, such as neighbourhood, longitude, latitude, district, and location were removed as they also eliminate the challenge of predicting the city. Amenities were also removed for this analysis as they provided too much trouble. Each combination of amenities is considered a unique categorical variable. Overcoming this challenge is covered within this report, but it was not necessary for this particular analysis. The data set was cut down from ~300k observations to 1k observations, blocked by city and randomized, with 100 observations for each one. This was done to expedite the process of fitting so many models. The model used was a basic LDA model over all variables, minus the aforementioned removals. For each model, one unique product of two numeric variables was added to the predictor space, and the misclassification rate was recorded.
 
 \maketitle
 \subsection{Results}
 
 The best performing models are seen in the table below. The default (no interaction terms added) misclassification rate was 0.013. There were two interaction terms that provided a rate of 0.008. The first was host_response_rate * minimum_nights, and the second was host_identity_verified * review_scores_communication. Five interaction terms gave a misclassification rate of 0.009, three of which contained the variable host_is_superhost, and the other two contained the variable bedrooms. Of these seven interaction terms, four contained a binary 0/1 variable, essentially meaning that the other term in the interaction had a different effect on the city depending on some binary condition. 
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 
 # table <- misclasserr[order(as.numeric(misclasserr[,1])),][1:7,]
 # colnames(table) <- c("misclassification error", "model formula")
@@ -168,7 +168,7 @@ table
 
 ```
 
-```{r, fig.width=10,fig.height=8, echo = FALSE}
+```{r, fig.width=10,fig.height=8, echo = FALSE, message=FALSE, warning=FALSE}
 ggplot(listings, aes(host_response_rate, minimum_nights, colour = city)) + 
   geom_point() + 
   xlab('Host response rate') + ylab('Minimum nights') +
@@ -178,7 +178,7 @@ ggplot(listings, aes(host_response_rate, minimum_nights, colour = city)) +
 ggplot(listings, aes(city, host_response_rate * minimum_nights)) + geom_boxplot() +
   xlab('Host response rate * minimum nights interaction term') + ylab('distribution, by city') +
   ylim(0, 100) + 
-  labs(caption = "As we can see, this interaction term helps identify observations as New York or Hong Kong Airbnbs; because their distributions are \n much higher than the other cities in the dataset. Adding this interaction term to the model may improve the models ability to correctly \n identify these two cities, as well as deter it from misidentifying other cities as New York or Hong Kong.") + 
+  labs(caption = "As we can see, this interaction term helps to identify observations as New York or Hong Kong Airbnbs because their distributions are \n much higher than the other cities in the dataset. Adding this interaction term to the model may improve the model's ability to correctly \n identify these two cities, as well as deter it from misidentifying other cities as New York or Hong Kong.") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1),
         plot.caption = element_text(hjust = 0.5))
 
@@ -189,7 +189,7 @@ ggplot(listings, aes(city, host_response_rate * minimum_nights)) + geom_boxplot(
 ggplot(listings[-which(listings$maximum_nights > (10^3)),], aes(bedrooms, maximum_nights, colour = city)) + 
   geom_point() + 
   xlab('Number of bedrooms') + ylab('Maximum nights stay') +
-  labs(caption = "We can see that the observations cluster along the axes of the plot, resulting on low product interaction terms. We see a cluster of \n observations coloured 'Paris' in the bottom corner, implying that Parisian Airbnbs have low values for their interaction terms.\n Looking at the next plot, a boxplot of the interaction term by city, we see this is confirmed.") +
+  labs(caption = "We can see that the observations' cluster along the axes of the plot, resulting on low product interaction terms. We see a cluster of \n observations coloured 'Paris' in the bottom corner, implying that Parisian Airbnbs have low values for their interaction terms.\n Looking at the next plot, a boxplot of the interaction term by city, we see this is confirmed.") +
   theme(axis.text.x = element_text(angle = 45, vjust = 1),
         plot.caption = element_text(hjust = 0.5))
 
@@ -210,7 +210,8 @@ ggplot(df, aes(city, price_standardized)) + geom_boxplot() + xlab('City') +
   ylab('Price') + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 ```
-Since prices of the Airbnb’s are recorded in each city’s country’s own currency, to make the prices comparable, it makes sense to standardize the variable. The best way to make all listings’ prices comparable is to divide each observation’s price by it’s city’s costliest Airbnb. That way, the spreads of the data separated by city are preserved while making the price variable unitless to allow for comparison of observations between cities.
+
+Since prices of Airbnb’s are recorded in each city’s country’s own currency, to make the prices comparable, it makes sense to standardize the variable. The best way to make all listings’ prices comparable is to divide each observation’s price by its city’s costliest Airbnb. That way, the spreads of the data separated by city are preserved while making the price variable unitless to allow for comparison of observations between cities.
 
 \section{Exploring Minimum Nights}
 
@@ -228,14 +229,17 @@ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 
 ```
-Since no other observations has anywhere near 10000 minimum nights required to rent, which no person would realistically want to rent anyway, it is reasonable to remove this observation from the data set. Furthermore, there are still many outliers, i.e values above the whiskers, preventing the spread from being reasonably assessed, so we apply a log transformation to minimum_nights to make it more readable.
+Since no other observations have anywhere near 10000 minimum nights required to rent, which no person would realistically want to rent anyway, it is reasonable to remove this observation from the data set. Furthermore, there are still many outliers, i.e., values above the whiskers, preventing the spread from being reasonably assessed, so we apply a log transformation to minimum_nights to make it more readable.
 
-Upon transforming the data, it is clear that most cities have many listings with very few minimum nights required to rent, as many of their boxes show Q1’s hovering right at 0. New York is the only exception, with
-a Q1 value of about 1.5 log days, or about 4.5 days, and a median of about 12 days. Conversely, Istanbul and Bangkok have medians hovering just above 0. These distinct spreads of values of minimum days may make Istanbul, Bangkok, and especially New York much easier to predict if this variable is significant in our
-model.
-
+Upon transforming the data, it is clear that most cities have many listings with very few minimum nights required to rent, as many of their boxes show Q1’s hovering right at 0. New York is the only exception, with a Q1 value of about 1.5 log days, or about 4.5 days, and a median of about 12 days. Conversely, Istanbul and Bangkok have medians hovering just above 0. These distinct spreads of values of minimum days may make Istanbul, Bangkok, and especially New York much easier to predict if this variable is significant in our model.
 
 \section{Exploring Review Score of Overall Rating}
+
+Many observations had to be removed from the data to accommodate the large amount of NANs in the review_score_ratings variable. 
+
+The high medians of and Q1 values of Cape Town and Rio suggest that these cities may be easier to predict than the rest. Hong Kong also seems to have a significantly lower rating spread of ratings than the rest of the cities, suggesting it may also be easier to predict than the rest. 
+
+However, unless the model used is sensitive to subtle differences in the values of these ratings, it likely won’t be very useful for classification. This is because the spreads of the data for these reviews are all very similar, with almost all quantiles above a score of 90. This contradicts what we originally thought, as we predicted that overall reviews may differ significantly from city to city. Generally, it seems Airbnb customers seem to give high reviews.
 
 ```{r exploring-data-review-scores-rating, message=FALSE, warning=FALSE, echo=FALSE}
 df_no_NAN <- df[!is.na(df$review_scores_rating),]
@@ -245,15 +249,12 @@ xlab('City') + ylab('Review Scores of Listings Overall Ratings') +
 theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 ```
-Many observations had to be removed from the data to accommodate the large amount of NANs in the
-review_score_ratings variable. 
-
-The high medians of and Q1 values of Cape Town and Rio suggest these cities may be easier to predict than the rest. Hong Kong also seems to have a significantly lower rating spread of ratings than the rest of the cities, suggesting it may also be easier to predict than the rest. 
-
-However, unless the model used is sensitive to subtle differences in the values of these ratings, it like won’t be very useful for classification. This is because the spreads of the data for these reviews are all very similar, with almost all quantilies above a score of 90. This contradicts what we originally thought, as we predicted that overall reviews may differ significantly from city to city. Generally, it seems Airbnb customers seem to give high reviews.
-
 
 \section{Exploring Review Scores of Location}
+
+Similar to overall review scores, many observations had to be removed to analyze review_scores_location due to the high volume of NANs. Some cities, such as Hong Kong, were significantly effected, as they have far fewer location reviews than, say, Paris. 
+
+The largest proportion of high reviews, i.e., 9s and 10s, belong to Paris at 24.99% and 26.09% respectively. Also, Istanbul has large shares of low reviews, with 23.15%, 28.57%, and 22.22% of 2s, 3s, and 4s respectively, compared to the other cities. These heavy tails may make it easier to classify these two cities if review scores based on location are a significant predictor in our model.
 
 ```{r exploring-data-review-scores-location, message=FALSE, warning=FALSE, echo=FALSE}
 df_no_NAN <- df[!is.na(df$review_scores_location),]
@@ -265,10 +266,7 @@ tabyl(df_no_NAN, city, review_scores_location)%>%
 adorn_percentages("col") %>%
 adorn_pct_formatting(digits = 2)
 ```
-Similar to overall review scores, many observations had to be removed to analyze review_scores_location due to the high volume of NANs. Some cities, such as Hong Kong, were significantly effected, as it is far fewer location reviews than, say, Paris. 
 
-The largest proportion of high reviews, i.e 9s and 10s, belong to Paris at 24.99% and 26.09% respectively. Also, Istanbul has large shares of low reviews, with 23.15%, 28.57%, and 22.22% of 2s, 3s, and 4s respectively,
-compared to th other cities. These heavy tails may make it easier to classify these two cities if review scores based on location is a significant predictor in our model.
 
 
 
