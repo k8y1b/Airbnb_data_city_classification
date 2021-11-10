@@ -16,6 +16,8 @@ library(testthat)
 listings <- read.csv("data/Listings_updated.csv")
 amenitiesCount <- read.csv("data/amenities_count.csv")
 require(gridExtra)
+library(dplyr)
+library(janitor)
 ```
 
 \maketitle
@@ -109,7 +111,7 @@ All observations were updated with new columns: 1 for has amenity and 2 for not.
 The first graph shows the count of all amenities. There is `r nrow(amenitiesCount)` different amenities in the dataset. A lot of them only have a count of 1, so to better view the distribution we removed all amenities that had below 100 observations. The second graph gives all amenities with a count over 100. The top red line is at total observation of dataset, and the bottom line is at 10,000. 10k was decided to be a good number to remove all amenities with less observations, because this would leave us with a more reasonable size of amenities to add to our dataset as new columns (60 after reduction). All observations we updated with a new columns, 1 for has amenity and 2 for not. 
 ```{r new-listings}
 listings[1:5,c(2,4,16,35:38)]
-
+```
 
 Below are the percent TRUE/FALSE values of the selected amenities for each city. Since we are trying to determine the city, based on the listings, seeing the different amenities by city will give us an understanding of how useful these amenities will be in our model. The graphs selected were:
 
@@ -199,8 +201,7 @@ ggplot(listings, aes(city, bedrooms * maximum_nights)) + geom_boxplot() +
 
 ```
 \section{Exploring Price}
-```{r exploring-data-price, message=FALSE, warning=FALSE}
-library(dplyr)
+```{r exploring-data-price, message=FALSE, warning=FALSE, echo=FALSE}
 df <- data.frame(listings)
 
 df <- (df %>% group_by(city) %>% mutate(price_standardized = price/max(price)))
@@ -213,7 +214,7 @@ Since prices of the Airbnb’s are recorded in each city’s country’s own cur
 
 \section{Exploring Minimum Nights}
 
-```{r exploring-data-minimum-nights, message=FALSE, warning=FALSE}
+```{r exploring-data-minimum-nights, message=FALSE, warning=FALSE, echo=FALSE}
 ggplot(df, aes(city, minimum_nights)) + geom_boxplot() +
 xlab('City') + ylab('Minimum Nights Needed to Rent') +
 theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
@@ -236,7 +237,7 @@ model.
 
 \section{Exploring Review Score of Overall Rating}
 
-```{r exploring-data-review-scores-rating, message=FALSE, warning=FALSE}
+```{r exploring-data-review-scores-rating, message=FALSE, warning=FALSE, echo=FALSE}
 df_no_NAN <- df[!is.na(df$review_scores_rating),]
 
 ggplot(df_no_NAN, aes(city, review_scores_rating)) + geom_boxplot() +
@@ -254,9 +255,9 @@ However, unless the model used is sensitive to subtle differences in the values 
 
 \section{Exploring Review Scores of Location}
 
-```{r exploring-data-review-scores-location, message=FALSE, warning=FALSE}
+```{r exploring-data-review-scores-location, message=FALSE, warning=FALSE, echo=FALSE}
 df_no_NAN <- df[!is.na(df$review_scores_location),]
-library(janitor)
+
 
 tabyl(df_no_NAN, city, review_scores_location)
 
