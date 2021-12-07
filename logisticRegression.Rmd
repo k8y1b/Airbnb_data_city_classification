@@ -1,0 +1,91 @@
+---
+title: "AirBnB Listings: An in depth dive into the world of short-term sublets"
+author: 'Armandas Bartas, Alex Romanus, Braeden Norman, Gabriel Lanzaro'
+date: "`r Sys.Date()`"
+output: 
+  bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    number_sections: false
+    toc: FALSE
+---
+
+```{r setup, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(glmnet)
+library(ramify)
+library(gam)
+library(MASS)
+library(nnet)
+library(class)
+listings <- read.csv("data/Listings_updated.csv")
+```
+## R Markdown
+
+```{r cars}
+data <- listings
+data <- (data %>% group_by(city) %>% mutate(price_standardized = price/max(price))) # data by max for city
+data <- listings[,-c(1,2,3,4,6,12,14:15,17:19,23,24)] # remove not used predictors
+data <- data[rowSums(is.na(data)) == 0, ] # remove lines with NA
+factor_cols <- c(2,5,7,9,21:81)
+data[factor_cols] <- lapply(data[factor_cols], factor)
+data$host_since <- difftime(Sys.Date(),as.Date(data$host_since), units = c("days"))
+y <- as.factor(data$city)
+
+
+nn <- 10000
+n <- nrow(data)
+
+#set.seed(123)
+set.seed(456)
+idx <- sample(1:n, 0.8*nrow(data))
+x_train <- model.matrix(~ ., data[idx,c(-8)])
+x_test <- model.matrix(~ ., data[-idx,c(-8)])
+y_train <- y[idx]
+y_test <- y[-idx]
+
+# with 123 and 456 seed 
+# percent error using 80/20 split
+
+# 0.232. 0.234
+lasso_logit_Cv <- cv.glmnet(x = x_train, y = y_train, family = "multinomial")
+result <- predict(lasso_logit_Cv, x_test, type = "class")
+mean(result != y_test)
+
+# 0.319, 0.322
+lasso_logit <- glmnet(x = x_train, y = y_train,  family = "multinomial")
+result <- predict(lasso_logit, x_test, type = "class")
+mean(result != y_test)
+
+# NA, 0.244
+ridge_logit_cv <- cv.glmnet(x = x_train, y = y_train, alpha = 0, family = "multinomial")
+result <- predict(ridge_logit_cv, x_test, type = "class")
+mean(result != y_test)
+
+# 0.545, 0.551
+ridge_logit <- glmnet(x = x_train, y = y_train, alpha = 0, family = "multinomial")
+result <- predict(ridge_logit, x_test, type = "class")
+mean(result != y_test)
+
+# 0.260 , 0.262
+lda <- lda(factor(city) ~ .,data)
+result <- predict(lda, data[-idx,], type = "class")
+mean(result$class != y_test)
+
+# 0.313, 0.310
+qda <- qda(factor(city) ~ .,data)
+result <- predict(qda, data[-idx,], type = "class")
+mean(result$class != y_test)
+
+# 0.533, 05319
+multinom <- multinom(factor(city) ~ .,data, maxit = 5000)
+result <- predict(multinom, data[-idx,], type = "class")
+mean(result != y_test)
+
+
+
+
+```
+
+
+

@@ -81,15 +81,13 @@ grid.arrange(p1, p2, ncol=2)
 
 \maketitle
 \section{Exploring Amenities}
-In the original dataset, there is a column with a list of string of possible amenities a listing has. Here we explored these lists to extract useful information for our predictions. For example, these are the first 5 observations:
+In the original dataset, there is a column with a list of string of possible amenities a listing has. Here we explored these lists to extract useful information for our predictions. For example:
 
-`r listings$amenities[1:5]`\newline
+`r listings$amenities[1]`\newline
 
-We found the list of all  amenities and graphically determined which to include in the updated dataset. For each included amenity, we added new columns labeling whether this listing has these amenities or not.
+We found the list of all  amenities and graphically determined which to include in the updated dataset.
 
-The first graph below shows the count of all amenities. There are `r nrow(amenitiesCount)` different amenities in the dataset. A lot of them only have a count of 1 so, to better view the distribution, we removed all amenities that had below 100 observations. The second graph gives all amenities with a count over 100. The top red line is at the total number of observations in the dataset, and the bottom line is at 10,000. 10k was decided to be a good number to remove all amenities with less observations. This would leave us with a more reasonable size of amenities to add to our dataset as new columns (60 new columns after reduction).
-
-```{r exploring-all-amenities, echo=FALSE}
+```{r exploring-all-amenities, echo=FALSE, fig.height= 3}
 par(mfrow = c(1, 2)) 
 barplot(amenitiesCount$V2, ylim = c(0, 280000), main = "All amenities"
         , xlab = "Amenities Index", ylab = "Count", cex.main = 0.8)
@@ -106,21 +104,12 @@ reducedAmenities <- amenitiesCount$V1[which(amenitiesCount$V2 > 10000)]
 reducedAmenitiesCount <- amenitiesCount$V2[which(amenitiesCount$V2 > 10000)]
 ```
 
-All observations were updated with new columns: 1 for has amenity and 2 for not. Here is a quick preview of what the updated dataset looks like.
+There were `r nrow(amenitiesCount)` different amenities and a lot of them only have a count of 1. So, to better view the distribution, we removed all amenities that had below 100 observations in the second graph above. The red lines are at total observation and cut-off for amenities inclusion (10,000).
 
-The first graph shows the count of all amenities. There is `r nrow(amenitiesCount)` different amenities in the dataset. A lot of them only have a count of 1, so to better view the distribution we removed all amenities that had below 100 observations. The second graph gives all amenities with a count over 100. The top red line is at total observation of dataset, and the bottom line is at 10,000. 10k was decided to be a good number to remove all amenities with less observations, because this would leave us with a more reasonable size of amenities to add to our dataset as new columns (60 after reduction). All observations we updated with a new columns, 1 for has amenity and 2 for not. 
-```{r new-listings}
-listings[1:5,c(2,4,16,35:38)]
-```
+All observations were updated with new columns: 1 for has amenity and 0 for not. Below are graphs of the percent TRUE/FALSE values of 2 of the 60 included amenities in the updated dataset.
 
-Below are the percent TRUE/FALSE values of the selected amenities for each city. Since we are trying to determine the city, based on the listings, seeing the different amenities by city will give us an understanding of how useful these amenities will be in our model. The graphs selected were:
-
-`r reducedAmenities[c(1,6,10,14,22,36,54,58)]`
-
-For example, in Heating, we only have 4 cities that have almost no listings with heating (Bangkok, Hong Kong, Mexico City, and Rio de Janeiro) If we also look at Air conditioning, we see that only 2, maybe, 3 have little to no listings with AC (Cape Town, Mexico City, and Paris). Now, if we take these two into account, we can see that given no AC and no Heating, we can be almost positive the listing is Mexico City. 
-
-```{r exploring-data, out.width="50%", echo=FALSE}
-selected <- c(1,6,10,14,22,36,54,58)
+```{r exploring-data, out.width="50%", echo=FALSE, fig.height= 4}
+selected <- c(1,6)
 knitr::opts_chunk$set(fig.width=unit(18,"cm"), fig.height=unit(5,"cm"))
 for (ii in selected) {
    plt <- ggplot(listings, aes(x = city, 
