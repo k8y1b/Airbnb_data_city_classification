@@ -125,7 +125,7 @@ The dataset was split into two sets: a training dataset with 80% of the data and
 ```{r model-error-results, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 load("data/modelComparison.RData")
 
-knitr::kable(results, col.names = c('Default Lasso', 'CV Lasso', 'Default Ridge', 'CV Ridge', 'LDA', 'QDA', 'Logistic Regression'))
+knitr::kable(results, col.names = c('CV Lasso', 'Default Lasso', 'CV Ridge', 'Default Ridge', 'LDA', 'QDA', 'Logistic Regression'))
 ```
 
 The following plots show different values of lambda for the lasso and the ridge logistic regressions. It also shows the number of predictors that were used in each model. Lasso performs better because it uses a subset of the predictors, and some of the predictors were not useful in the final model. Therefore, the accuracy of the lasso  model with fewer predictors outperformed the ridge model.
