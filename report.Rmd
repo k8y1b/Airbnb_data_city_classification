@@ -231,11 +231,8 @@ lasso <- readPNG("plot/glmnet_cv_fit.png")
 grid::grid.raster(lasso)
 ```
 
-<<<<<<< HEAD
-Another attempt to incrase accuracy was preprocessing; however, by default glmnet does standardize data. Looking at the table below we can see that accuracy with different preprocessing. Feature Scaling/ Normalization has a significant different on the accuracy, which makes sense as regression does require scaling otherwise some betas maybe be so large as to out weight certain predictors.  
-=======
 Preprocessing was also used to try to increase the model performance.The table below shows the accuracies with different preprocessing techniques. By default, glmnet standardizes the data. Therefore, no differences were found between the accuracy reported previously and the accuracy with standardization below. In addition, there were no great differences by implementing the min-max normalization.
->>>>>>> 77df9aad27026f13ad486c82a6977e391b0058e4
+
 
 ```{r model-error-results_normalize, message=FALSE, warning=FALSE, echo=FALSE}
 results_with_normalization

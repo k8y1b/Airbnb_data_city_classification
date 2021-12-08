@@ -135,7 +135,7 @@ results
 	# table of results
 	results_with_normalization <- data.frame(
 	      Lasso.Without = round(lasso_logit_without_error,4),
-	      Lasso.With.Standardization = round(lasso_logit_Cv_scaling_error,4),
+	      Lasso.With.Standardization = round(lasso_logt_cv_error,4),
 	      Lasso.With.Min.Max.Scaling = round(lasso_logit_Cv_std_error,4))
 	rownames(results_with_normalization) <- c("Error")
 	results_with_normalization
