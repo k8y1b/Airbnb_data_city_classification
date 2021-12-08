@@ -219,7 +219,9 @@ adorn_pct_formatting(digits = 2)
 \maketitle
 \section{Model Analysis}
 
-Since determining city is a classifier problem we could eliminate all models that do not fit well with classifiers. At first glance, on the table below, are some of these models we chose to try using on this dataset. Of the seven models tried here, lasso regression with cross validation performed the best.
+This report considered classification models to determine the different cities based on the AirBnb data. Seven different classification models were applied to the dataset. Out of the seven proposed models, the lasso classifier presented the best performance.
+
+The plots below show different values of lambda for the lasso and the ridge regressions. It also shows the number of predictors that were used in each model. Lasso performs better because it uses a subset of the predictors, and some of the predictors were not useful in the final model. Therefore, the accuracy of the lasso regression model with fewer predictors outperformed the ridge regression.
 
 ```{r model-error-results, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 load("data/modelComparison.RData")
@@ -227,9 +229,8 @@ results
 lasso <- readPNG("plot/glmnet_cv_fit.png")
 grid::grid.raster(lasso)
 ```
-Using he graphs above we can compare the lasso vs ridge and the number of predictors used. The reason lasso performs better is because it uses a subset of the predictors. Some of the predictors were not useful in the final model and that is the final accuracy of lasso outperformed ridge. 
 
-Another attempt to incrase accuracy was preprocessing; however, by default glmnet does standardize data. Looking at the table below we can see that accuracy with different preprocessing. Feature Scaling/ Normalization has a significant different on the accuracy, which makes sense as regression does require scaling otherwise some betas maybe be so large as to outweight certain predictors.  
+Preprocessing was also used to try to increase the model performance.; however, by default glmnet does standardize data. Looking at the table below we can see that accuracy with different preprocessing. Feature Scaling/ Normalization has a significant different on the accuracy, which makes sense as regression does require scaling otherwise some betas maybe be so large as to outweight certain predictors.  
 
 ```{r model-error-results_normalize, message=FALSE, warning=FALSE, echo=FALSE}
 results_with_normalization
