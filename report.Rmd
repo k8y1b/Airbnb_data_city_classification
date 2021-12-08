@@ -35,7 +35,7 @@ The analysis can then reveal important aspects regarding how different attribute
 - Can we predict the city based on different preferences related to the place to stay? \newline
 - What are the most important AirBnB variables to predict a city for destination?
 
-This project uses two classification algorithms to predict the cities: random forests and multinomial logistic regression. These methods have been selected as they provide different inferences about the data.
+This project uses two classification algorithms to predict the cities: random forests and standard multinomial classification techniques. These methods have been selected as they provide different inferences about the data.
 
 \maketitle
 \section{Exploratory Analysis}
@@ -83,113 +83,13 @@ for (ii in selected) {
 
 ```
 
-\maketitle
-\section{Exploring Interactions}
+The ratings were also evaluated. The high medians of Cape Town and Rio suggest that these cities may be easier to predict than the rest. Hong Kong also seems to have a significantly lower rating spread of ratings than the rest of the cities. Generally, it seems Airbnb customers seem to give high reviews.
 
-The addition of interaction terms is a form of basis expansion. Interaction terms model the change in response variables against the change in a product or quotient of two or more predictor variables. They help in the case where the added effects of two predictor variables do not stack linearly, rather, they compound on each other. The right interaction terms can improve a model, but adding too many terms, or the wrong terms, increase variance and can actually worsen out of sample performance.
-
-\maketitle
-\subsection{Method}
-
-The method was to systematically fit a separate model for each interaction term. The interaction terms used were products of pairs of predictor variables. As such, the categorical variables were not included in the analysis of interactions. The true/false variables were converted into binary 0/1. Some data cleaning had to be done: ListingID and name were removed as they uniquely identify the corresponding observation, geographical information, such as neighbourhood, longitude, latitude, district, and location were removed as they also eliminate the challenge of predicting the city. Amenities were also removed for this analysis as they provided too much trouble. Each combination of amenities is considered a unique categorical variable. Overcoming this challenge is covered within this report, but it was not necessary for this particular analysis. The data set was cut down from ~300k observations to 1k observations, blocked by city and randomized, with 100 observations for each one. This was done to expedite the process of fitting so many models. The model used was a basic LDA model over all variables, minus the aforementioned removals. For each model, one unique product of two numeric variables was added to the predictor space, and the misclassification rate was recorded.
-
-\maketitle
-\subsection{Results}
-
-The best performing models are seen in the table below. The default (no interaction terms added) misclassification rate was 0.013. There were two interaction terms that provided a rate of 0.008. The first was host_response_rate * minimum_nights, and the second was host_identity_verified * review_scores_communication. Five interaction terms gave a misclassification rate of 0.009, three of which contained the variable host_is_superhost, and the other two contained the variable bedrooms. Of these seven interaction terms, four contained a binary 0/1 variable, essentially meaning that the other term in the interaction had a different effect on the city depending on some binary condition. 
-
-```{r echo=FALSE, warning=FALSE, message=FALSE}
-
-# table <- misclasserr[order(as.numeric(misclasserr[,1])),][1:7,]
-# colnames(table) <- c("misclassification error", "model formula")
-
-
-table <- rbind(c("misclass error", "model formula"),                                                    
-c("0.008","city ~ . + host_response_rate * minimum_nights"),                
-c("0.008","city ~ . + host_identity_verified * review_scores_communication"),
-c("0.009","city ~ . + host_is_superhost * host_total_listings_count"),      
-c("0.009","city ~ . + host_is_superhost * price"),                           
-c("0.009","city ~ . + host_is_superhost * review_scores_location"),          
-c("0.009","city ~ . + bedrooms * maximum_nights"),        
-c("0.009","city ~ . + bedrooms * review_scores_location"))
-table
-
-```
-
-```{r, fig.width=10,fig.height=8, echo = FALSE, message=FALSE, warning=FALSE}
-ggplot(listings, aes(host_response_rate, minimum_nights, colour = city)) + 
-  geom_point() + 
-  xlab('Host response rate') + ylab('Minimum nights') +
-  ylim(0, 1500) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-
-ggplot(listings, aes(city, host_response_rate * minimum_nights)) + geom_boxplot() +
-  xlab('Host response rate * minimum nights interaction term') + ylab('distribution, by city') +
-  ylim(0, 100) + 
-  labs(caption = "As we can see, this interaction term helps to identify observations as New York or Hong Kong Airbnbs because their distributions are \n much higher than the other cities in the dataset. Adding this interaction term to the model may improve the model's ability to correctly \n identify these two cities, as well as deter it from misidentifying other cities as New York or Hong Kong.") + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1),
-        plot.caption = element_text(hjust = 0.5))
-
-
-
-
-
-ggplot(listings[-which(listings$maximum_nights > (10^3)),], aes(bedrooms, maximum_nights, colour = city)) + 
-  geom_point() + 
-  xlab('Number of bedrooms') + ylab('Maximum nights stay') +
-  labs(caption = "We can see that the observations' cluster along the axes of the plot, resulting on low product interaction terms. We see a cluster of \n observations coloured 'Paris' in the bottom corner, implying that Parisian Airbnbs have low values for their interaction terms.\n Looking at the next plot, a boxplot of the interaction term by city, we see this is confirmed.") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1),
-        plot.caption = element_text(hjust = 0.5))
-
-ggplot(listings, aes(city, bedrooms * maximum_nights)) + geom_boxplot() +
-  xlab('Bedrooms * maximum nights interaction term') + ylab('distribution, by city') +
-  ylim(0, 1000) + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-
-
-```
-\section{Exploring Price}
-```{r exploring-data-price, message=FALSE, warning=FALSE, echo=FALSE}
+```{r exploring-data-review-scores-rating, message=FALSE, warning=FALSE, echo=FALSE}
 df <- data.frame(listings)
 
 df <- (df %>% group_by(city) %>% mutate(price_standardized = price/max(price)))
 
-ggplot(df, aes(city, price_standardized)) + geom_boxplot() + xlab('City') +
-  ylab('Price') + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-
-```
-
-Since prices of Airbnb’s are recorded in each city’s country’s own currency, to make the prices comparable, it makes sense to standardize the variable. The best way to make all listings’ prices comparable is to divide each observation’s price by its city’s costliest Airbnb. That way, the spreads of the data separated by city are preserved while making the price variable unitless to allow for comparison of observations between cities.
-
-\section{Exploring Minimum Nights}
-
-```{r exploring-data-minimum-nights, message=FALSE, warning=FALSE, echo=FALSE}
-ggplot(df, aes(city, minimum_nights)) + geom_boxplot() +
-xlab('City') + ylab('Minimum Nights Needed to Rent') +
-theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-
-index_to_remove <- df[df$minimum_nights > 9000,]$listing_id
-df <- subset(df, listing_id != index_to_remove)
-
-ggplot(df, aes(city, log(minimum_nights))) + geom_boxplot() +
-xlab('City') + ylab('Log Minimum Nights Needed to Rent') +
-theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
-
-
-```
-Since no other observations have anywhere near 10000 minimum nights required to rent, which no person would realistically want to rent anyway, it is reasonable to remove this observation from the data set. Furthermore, there are still many outliers, i.e., values above the whiskers, preventing the spread from being reasonably assessed, so we apply a log transformation to minimum_nights to make it more readable.
-
-Upon transforming the data, it is clear that most cities have many listings with very few minimum nights required to rent, as many of their boxes show Q1’s hovering right at 0. New York is the only exception, with a Q1 value of about 1.5 log days, or about 4.5 days, and a median of about 12 days. Conversely, Istanbul and Bangkok have medians hovering just above 0. These distinct spreads of values of minimum days may make Istanbul, Bangkok, and especially New York much easier to predict if this variable is significant in our model.
-
-\section{Exploring Review Score of Overall Rating}
-
-Many observations had to be removed from the data to accommodate the large amount of NANs in the review_score_ratings variable. 
-
-The high medians of and Q1 values of Cape Town and Rio suggest that these cities may be easier to predict than the rest. Hong Kong also seems to have a significantly lower rating spread of ratings than the rest of the cities, suggesting it may also be easier to predict than the rest. 
-
-However, unless the model used is sensitive to subtle differences in the values of these ratings, it likely won’t be very useful for classification. This is because the spreads of the data for these reviews are all very similar, with almost all quantiles above a score of 90. This contradicts what we originally thought, as we predicted that overall reviews may differ significantly from city to city. Generally, it seems Airbnb customers seem to give high reviews.
-
-```{r exploring-data-review-scores-rating, message=FALSE, warning=FALSE, echo=FALSE}
 df_no_NAN <- df[!is.na(df$review_scores_rating),]
 
 ggplot(df_no_NAN, aes(city, review_scores_rating)) + geom_boxplot() +
@@ -198,21 +98,19 @@ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 ```
 
-\section{Exploring Review Scores of Location}
-
-Similar to overall review scores, many observations had to be removed to analyze review_scores_location due to the high volume of NANs. Some cities, such as Hong Kong, were significantly effected, as they have far fewer location reviews than, say, Paris. 
-
-The largest proportion of high reviews, i.e., 9s and 10s, belong to Paris at 24.99% and 26.09% respectively. Also, Istanbul has large shares of low reviews, with 23.15%, 28.57%, and 22.22% of 2s, 3s, and 4s respectively, compared to the other cities. These heavy tails may make it easier to classify these two cities if review scores based on location are a significant predictor in our model.
+The following table shows the proportion of reviews. The largest proportion of high reviews, i.e., 9s and 10s, belong to Paris at 24.99% and 26.09% respectively. Also, Istanbul has large shares of low reviews, with 23.15%, 28.57%, and 22.22% of 2s, 3s, and 4s, respectively, compared to the other cities. These heavy tails may make it easier to classify these two cities if review scores based on location are a significant predictor in the model.
 
 ```{r exploring-data-review-scores-location, message=FALSE, warning=FALSE, echo=FALSE}
 df_no_NAN <- df[!is.na(df$review_scores_location),]
 
 
-tabyl(df_no_NAN, city, review_scores_location)
+table1 <- tabyl(df_no_NAN, city, review_scores_location)
 
-tabyl(df_no_NAN, city, review_scores_location)%>%
+table2 <- tabyl(df_no_NAN, city, review_scores_location)%>%
 adorn_percentages("col") %>%
 adorn_pct_formatting(digits = 2)
+
+knitr::kable(table2)
 ```
 
 \maketitle
@@ -224,33 +122,26 @@ This report considered classification models to determine the different cities b
 
 The dataset was split into two sets: a training dataset with 80% of the data and a test dataset with 20% of the data. The errors were then computed using the test dataset. Out of the seven proposed models, the lasso logistic regression with lambda selected via cross-validation presented the best performance because of its lower error (i.e., higher accuracy).
 
-
 ```{r model-error-results, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 load("data/modelComparison.RData")
 
 knitr::kable(results, col.names = c('Default Lasso', 'CV Lasso', 'Default Ridge', 'CV Ridge', 'LDA', 'QDA', 'Logistic Regression'))
 ```
 
-
 The following plots show different values of lambda for the lasso and the ridge logistic regressions. It also shows the number of predictors that were used in each model. Lasso performs better because it uses a subset of the predictors, and some of the predictors were not useful in the final model. Therefore, the accuracy of the lasso  model with fewer predictors outperformed the ridge model.
-
 
 ```{r model-comparison-lasso-ridge, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 lasso <- readPNG("plot/glmnet_cv_fit.png")
 grid::grid.raster(lasso)
 ```
 
-
 Preprocessing was also used to try to increase the model performance. The following tables shows the accuracies with different preprocessing techniques. By default, glmnet standardizes the data. Therefore, no differences were found between the accuracy reported previously and the accuracy with standardization. In addition, there were no great differences by implementing the min-max normalization.
-
 
 ```{r model-error-results_normalize, message=FALSE, warning=FALSE, echo=FALSE}
 knitr::kable(results_with_normalization, col.names = c('CV Lasso', 'CV Lasso with Standardization', 'CV Lasso with Min-Max Normalization'))
 ```
 
-
 The following tables show the accuracy of the model by city. The first table is a confusion matrix, and the second is the accuracy by city. Rio de Janeiro had the highest accuracy of all cities: it presented an accuracy of approximately 83%.
-
 
 ```{r confusion-matrix, message=FALSE, warning=FALSE, echo=FALSE}
 knitr::kable(confusionMat$table, col.names = c('BNK', 'CPT', 'HKG', 'IST', 'MXC', 'NYC', 'PAR', 'RIO', 'ROM', 'SYD'))
@@ -258,19 +149,16 @@ knitr::kable(confusionMat$table, col.names = c('BNK', 'CPT', 'HKG', 'IST', 'MXC'
 knitr::kable(cityAccuracy, col.names = c('City', 'Accuracy'), digits = 3)
 ```
 
-
 Finally, the plots below display the coefficient values for the different cities. The figures show that the coefficients may vary considerably depending on the city. For example, the coefficients for Sydney are very different from the coefficients for Cape Town. It shows the variables may exert different degrees of influence in different cities.
-
 
 ```{r model-results_norm, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 norm <- readPNG("plot/l1_norm_lasso.png")
 grid::grid.raster(norm)
 ```
 
-
 \subsection{Random Forest Analysis}
 
-The most important tuning parameter with regards to random forest is mtry - the number of randomly selected predictors to use when building each individual tree. Greedy descent was performed on mtry, starting at mtry = 1, and adding +1 at each iteration until doing so no longer improved the out of bag error. This analysis, and the following on nodesize, were done using a 10 000 row subset of the original data set in order to decrease computation time. Models with an mtry value of 7 performed slightly better than those with the default parameter of 9. No analysis was done on higher values of mtry.  
+The most important tuning parameter with regards to random forest is mtry - the number of randomly selected predictors to use when building each individual tree. Greedy descent was performed on mtry, starting at mtry = 1, and adding +1 at each iteration until it no longer improved the out of bag error. This analysis, and the following on nodesize (i.e., the minimum size of terminal nodes), were done using a 10 000 row subset of the original data set in order to decrease computation time. Models with an mtry value of 7 performed slightly better than those with the default parameter of 9. No analysis was done on higher values of mtry.  
 
 ```{r, echo = FALSE, fig.width = 6, fig.height=3}
 mtry_vals = 1:8
@@ -284,7 +172,7 @@ ggplot(as.data.frame(cbind(mtry_vals, mtry_oob_err)), aes(x = mtry_vals, y = mtr
   ggtitle("Greedy Descent on Mtry")
 ```
   
-A greedy descent was also done on the maxnodes parameter - the maximum number of terminal nodes in each tree. However, larger values or maxnodes took too long to compute and analysis was abandoned. Nodesize - the minimum size of terminal nodes, was found to be a better tuning parameter to modify. Trying different values for nodesize revealed that the default value for classification, 1, gave the best out of bag error.  
+A greedy descent was also done on the maxnodes parameter - the maximum number of terminal nodes in each tree. However, larger values or maxnodes took too long to compute and the analysis was abandoned. Nodesize - the minimum size of terminal nodes, was found to be a better tuning parameter to modify. Trying different values for nodesize revealed that the default value for classification, 1, gave the best out-of-bag error.  
 
 ```{r, echo = FALSE, fig.width=6, fig.height = 3}
 
@@ -299,11 +187,9 @@ ggplot(as.data.frame(cbind(nodesize_vals, nodesize_oob_err)), aes(x = nodesize_v
   ggtitle("Nodesize Value verus Error")
 ```
   
-Class weights were added in an attempt to improve the model. My hypothesis was that weighing the harder-to-predict classes more heavily would improve the classification error - it did not. For completeness, I tried weighing those classes more lightly compared to the easier-to-predict classes. This also did not have any substantial effect on the error.  
+Class weights were added in an attempt to improve the model. The hypothesis was that weighing the harder-to-predict classes more heavily would improve the classification error. However, it did occur. For completeness, those calsses were weighted more lightly compared to the easier-to-predict classes. This  did not have any substantial effect on the error either.  
   
-Variable selection was evaluated using the rfcv() function with a reduced data set. It was found that eliminating variables increased the out-of-bag error. It is worth noting that these reduced models would theoretically have lower variance but increased bias. It is also worth noting that the increase in error resulting from variable elimination was larger when fitted on a larger data set. The reduced model with 42 predictor variables, and the full model with 83 variables, were then fitted on the full data set (complete cases only). 
-
-
+Variable selection was evaluated using the rfcv() function with a reduced dataset. It was found that eliminating variables increased the out-of-bag error. It is worth noting that these reduced models would theoretically have lower variance but increased bias. It is also worth noting that the increase in error resulting from variable reduction was larger when fitted on a larger dataset. The reduced model with 42 predictor variables and the full model with 83 variables were then fitted on the full dataset (complete cases only). 
 ``` {r, echo = FALSE, fig.width = 6, fig.height = 3}
 # testcv = readRDS("testcv.rds")
 # testcv2 = readRDS("testcv2.rds")
@@ -331,7 +217,11 @@ grid::grid.raster(cvrfplot)
 # FILES ARE TOO LARGE TO UPLOAD TO GITHUB (:
 ```
 
-After all the analysis, two random forest models were fitted with mtry set to 7. The first model was fitted over all variables and gave an out-of-bag classification error of 10.01%. The second model was fitted over the 42 variables marked most important by the random forest algorithm in the first model. It achieved an out-of-bag classification error of ##%. The easiest class to classify was Bangkok. The most difficult were Hong Kong and Istanbul, which often were mistaken for each-other. Sidney was also misclassified often as either New York or Paris. Overall, the random forest model performed very well and with minimal adjustments from the default parameters. 
+This report used different classification techniques to predict the cities based on an Airbnb dataset. 10 different cities from very distinct parts of the world were used. The explanatory analysis revealed that many variables (e.g., amenities, review scores, number of days as a host) influenced the cities. These variables were used to fit the classification models using traditional multinomial logistic models and random forest models.
+
+After all the analysis, two random forest models were fitted with mtry set to 7. The first model was fitted over all variables and gave an out-of-bag classification error of 10.01%. The second model was fitted over the 42 variables marked most important by the random forest algorithm in the first model. It achieved an out-of-bag classification error of ##%. The easiest class to classify was Bangkok. The most difficult were Hong Kong and Istanbul, which often were mistaken for each-other. Sidney was also misclassified often as either New York or Paris. Overall, the random forest model performed very well and with minimal adjustments from the default parameters.
+
+By comparing the random forest results to the traditional classification techniques (e.g., logistic regression), it can be seen that random forests presented better performance. In addition, random forests can provide additional and clearer inferences using the variance importance plot. Future works can include deep learning techniques as an attempt to further improve the performance of the model.
 
 \maketitle
 \section{References}
