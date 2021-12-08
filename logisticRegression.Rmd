@@ -1,0 +1,168 @@
+---
+title: "AirBnB Listings: An in depth dive into the world of short-term sublets"
+author: 'Armandas Bartas, Alex Romanus, Braeden Norman, Gabriel Lanzaro'
+date: "`r Sys.Date()`"
+output: 
+  bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    number_sections: false
+    toc: FALSE
+---
+
+```{r setup, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(glmnet)
+library(ramify)
+library(gam)
+library(MASS)
+library(nnet)
+library(class)
+library(caret)
+listings <- read.csv("data/Listings_updated.csv")
+```
+## R Markdown
+
+```{r cars}
+data <- listings
+data <- (data %>% group_by(city) %>% mutate(price_standardized = price/max(price))) # data by max for city
+data <- listings[,-c(1,2,3,4,6,12,14:15,17:19,23,24)] # remove not used predictors
+data <- data[rowSums(is.na(data)) == 0, ] # remove lines with NA
+factor_cols <- c(2,5,7,9,21:81)
+data[factor_cols] <- lapply(data[factor_cols], factor)
+data$host_since <- difftime(Sys.Date(),as.Date(data$host_since), units = c("days"))
+y <- as.factor(data$city)
+
+n <- nrow(data)
+
+#set.seed(123)
+set.seed(456)
+idx <- sample(1:n, 0.8*nrow(data))
+x_train <- model.matrix(~ ., data[idx,c(-8)])
+x_test <- model.matrix(~ ., data[-idx,c(-8)])
+y_train <- y[idx]
+y_test <- y[-idx]
+
+# with 123 and 456 seed 
+# percent error using 80/20 split
+
+# 0.232. 0.234
+lasso_logit_Cv <- cv.glmnet(x = x_train, y = y_train, family = "multinomial")
+result <- predict(lasso_logit_Cv, x_test, type = "class")
+lasso_logt_cv_error <- mean(result != y_test)
+lasso_logt_cv_error
+
+result <- predict(lasso_logit_Cv, model.matrix(~ ., data[,c(-8)]), type = "class")
+confusionMat <- confusionMatrix(as.factor(result), y)
+
+countByCity <- double(ncol(confusionMat$table))
+cityAccuracy <- double(ncol(confusionMat$table))
+for (ii in 1:ncol(confusionMat$table) ) {
+  countByCity[ii] <- sum(confusionMat$table[ii,])
+  cityAccuracy[ii] <- max(confusionMat$table[ii,])/sum(confusionMat$table[ii,])
+}
+cityAccuracy <- as.table(cityAccuracy)
+names(cityAccuracy) <- levels(y_test)
+
+r# 0.319, 0.322
+lasso_logit <- glmnet(x = x_train, y = y_train,  family = "multinomial")
+result <- predict(lasso_logit, x_test, type = "class")
+lasso_logit_error <- mean(result != y_test)
+
+# NA, 0.244
+ridge_logit_cv <- cv.glmnet(x = x_train, y = y_train, alpha = 0, family = "multinomial")
+result <- predict(ridge_logit_cv, x_test, type = "class")
+ridge_logit_cv_error <- mean(result != y_test)
+
+# 0.545, 0.551
+ridge_logit <- glmnet(x = x_train, y = y_train, alpha = 0, family = "multinomial")
+result <- predict(ridge_logit, x_test, type = "class")
+ridge_logit_error <- mean(result != y_test)
+
+# 0.260 , 0.262
+lda <- lda(factor(city) ~ .,data)
+result <- predict(lda, data[-idx,], type = "class")
+lda_error <- mean(result$class != y_test)
+
+# 0.313, 0.310
+qda <- qda(factor(city) ~ .,data)
+result <- predict(qda, data[-idx,], type = "class")
+qda_error <- mean(result$class != y_test)
+
+# 0.533, 05319
+multinom <- multinom(factor(city) ~ .,data, maxit = 5000)
+result <- predict(multinom, data[-idx,], type = "class")
+multinom_error <- mean(result != y_test)
+
+# table of results
+results <- data.frame(
+      Lasso.Logit.cv = round(lasso_logt_cv_error,4),
+      Lasso.Logit = round(lasso_logit_error,4),
+      Ridge.Logit.cv = round(ridge_logit_cv_error,4),
+      Ridge.Logit = round(ridge_logit_error,4),
+      LDA = round(lda_error,4),
+      QDA = round(qda_error,4),
+      multinom = round(multinom_error,4))
+
+rownames(results) <- c("Error")
+results
+
+
+	# without 
+	lasso_logit_without <- cv.glmnet(x = x_train, y = y_train, family = "multinomial", standardize = FALSE)
+	result <- predict(lasso_logit_without, x_test, type = "class")
+	lasso_logit_without_error <- mean(result != y_test)
+	lasso_logit_without_error
+	
+	# standardization
+	lasso_logit_Cv_std  <- cv.glmnet(x = x_train, y = y_train, family = "multinomial")
+	result <- predict(lasso_logit_Cv_std , x_test, type = "class")
+	lasso_logit_Cv_std_error <- mean(result != y_test)
+	lasso_logit_Cv_std_error
+	
+	# min-max scaling
+	preprocesser <- preProcess(data, method= c("range"))
+	preprocessed <- predict(preprocesser, data)
+	
+	x_train <- model.matrix(~ ., preprocessed[idx,c(-8)])
+	x_test <- model.matrix(~ ., preprocessed[-idx,c(-8)])
+	
+	lasso_logit_Cv_scaling <- cv.glmnet(x = x_train, y = y_train, family = "multinomial")
+	result <- predict(lasso_logit_Cv_scaling, x_test, type = "class")
+	lasso_logit_Cv_scaling_error <- mean(result != y_test)
+	lasso_logit_Cv_scaling_error
+	
+	# table of results
+	results_with_normalization <- data.frame(
+	      Lasso.Without = round(lasso_logit_without_error,4),
+	      Lasso.With.Standardization = round(lasso_logt_cv_error,4),
+	      Lasso.With.Min.Max.Scaling = round(lasso_logit_Cv_std_error,4))
+	rownames(results_with_normalization) <- c("Error")
+	results_with_normalization
+	
+	# lasso removed predictors. 
+	# top of plot(lasso) is the amount of predictors used
+	# 11 fits 1 for each fold and 1 for all data
+	par(mfrow = c(1,2))
+	plot(lasso_logit_Cv, main = "lasso") # a plot method for the cv fit
+	plot(ridge_logit_cv, main = "ridge")
+	# Right decrease lambda value 
+	
+	# elastic_net alpha 0 to 1
+	par(mfrow = c(2,5))
+	abline(v = sum(abs(coef(lasso_logit_Cv)))) # defaults to `lambda.1se`
+  plot(lasso_logit_Cv$glmnet.fit, main = 'Lasso')
+	
+	
+	# save models
+	rm(listings)
+	rm(preprocesser)
+	rm(preprocessed)
+	rm(multinom)
+	rm(qda)
+	rm(lda)
+save.image("data/modelComparison.RData")
+```
+
+
+
