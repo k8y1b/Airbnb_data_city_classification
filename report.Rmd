@@ -18,6 +18,7 @@ amenitiesCount <- read.csv("data/amenities_count.csv")
 require(gridExtra)
 library(dplyr)
 library(janitor)
+library(png)
 ```
 
 \maketitle
@@ -256,6 +257,33 @@ adorn_percentages("col") %>%
 adorn_pct_formatting(digits = 2)
 ```
 
+\newpage
+\maketitle
+\section{Model Analysis}
 
+Since determining city is a classifier problem we could eliminate all models that do not fit well with classifiers. At first glance, on the table below, are some of these models we chose to try using on this dataset. Of the seven models tried here, lasso regression with cross validation performed the best.
 
+```{r model-error-results, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
+load("data/modelComparison.RData")
+results
+lasso <- readPNG("plot/glmnet_cv_fit.png")
+grid::grid.raster(lasso)
+```
+Using he graphs above we can compare the lasso vs ridge and the number of predictors used. The reason lasso performs better is because it uses a subset of the predictors. Some of the predictors were not useful in the final model and that is the final accuracy of lasso outperformed ridge. 
+
+Another attempt to incrase accuracy was preprocessing; however, by default glmnet does standardize data. Looking at the table below we can see that accuracy with different preprocessing. Feature Scaling/ Normalization has a significant different on the accuracy, which makes sense as regression does require scaling otherwise some betas maybe be so large as to outweight certain predictors.  
+
+```{r model-error-results_normalize, message=FALSE, warning=FALSE, echo=FALSE}
+results_with_normalization
+```
+The two tables below give a better idea of the accuracy of the model by city. The first table is a confusion and the second in the accuracy by city. Rio de Janeiro had the highest accuracy of all the citys at 82.97% accuracy. 
+```{r confusion-matrix, message=FALSE, warning=FALSE, echo=FALSE}
+confusionMat$table
+cityAccuracy
+```
+
+```{r model-results_norm, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
+norm <- readPNG("plot/l1_norm_lasso.png")
+grid::grid.raster(norm)
+```
 
