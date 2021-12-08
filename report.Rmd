@@ -271,7 +271,7 @@ grid::grid.raster(lasso)
 ```
 Using he graphs above we can compare the lasso vs ridge and the number of predictors used. The reason lasso performs better is because it uses a subset of the predictors. Some of the predictors were not useful in the final model and that is the final accuracy of lasso outperformed ridge. 
 
-Another attempt to incrase accuracy was preprocessing; however, by default glmnet does standardize data. Looking at the table below we can see that accuracy with different preprocessing. Feature Scaling/ Normalization has a significant different on the accuracy, which makes sense as regression does require scaling otherwise some betas maybe be so large as to outweight certain predictors.  
+Another attempt to incrase accuracy was preprocessing; however, by default glmnet does standardize data. Looking at the table below we can see that accuracy with different preprocessing. Feature Scaling/ Normalization has a significant different on the accuracy, which makes sense as regression does require scaling otherwise some betas maybe be so large as to out weight certain predictors.  
 
 ```{r model-error-results_normalize, message=FALSE, warning=FALSE, echo=FALSE}
 results_with_normalization
