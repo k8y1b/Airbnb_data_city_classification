@@ -215,13 +215,14 @@ adorn_percentages("col") %>%
 adorn_pct_formatting(digits = 2)
 ```
 
-\newpage
 \maketitle
 \section{Model Analysis}
 
-This report considered classification models to determine the different cities based on the AirBnb data. Seven different classification models were applied to the dataset. Out of the seven proposed models, the lasso classifier presented the best performance.
+This report considered classification models to determine the different cities based on the AirBnb data. Seven different classification models were applied to the dataset: (1) lasso logistic regression with default lambda, (2) lasso logistic regression with the lambda selected via cross-validation, (3) ridge logistic regression with default lambda, (4) lasso logistic regression with lambda selected via cross-validation, (5) linear discriminant analysis (LDA), (6) quadratic discriminant analysis (QDA), and (7) logistic regression. 
 
-The plots below show different values of lambda for the lasso and the ridge regressions. It also shows the number of predictors that were used in each model. Lasso performs better because it uses a subset of the predictors, and some of the predictors were not useful in the final model. Therefore, the accuracy of the lasso regression model with fewer predictors outperformed the ridge regression.
+The dataset was split into two sets: a training dataset with 80% of the data and a test dataset with 20% of the data. The errors were then computed using the test dataset. Out of the seven proposed models, the lasso logistic regression with lambda selected via cross-validation presented the best performance because of its lower error (i.e., higher accuracy).
+
+The plots below show different values of lambda for the lasso and the ridge logistic regressions. It also shows the number of predictors that were used in each model. Lasso performs better because it uses a subset of the predictors, and some of the predictors were not useful in the final model. Therefore, the accuracy of the lasso  model with fewer predictors outperformed the ridge model.
 
 ```{r model-error-results, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 load("data/modelComparison.RData")
@@ -230,16 +231,20 @@ lasso <- readPNG("plot/glmnet_cv_fit.png")
 grid::grid.raster(lasso)
 ```
 
-Preprocessing was also used to try to increase the model performance.; however, by default glmnet does standardize data. Looking at the table below we can see that accuracy with different preprocessing. Feature Scaling/ Normalization has a significant different on the accuracy, which makes sense as regression does require scaling otherwise some betas maybe be so large as to outweight certain predictors.  
+Preprocessing was also used to try to increase the model performance.The table below shows the accuracies with different preprocessing techniques. By default, glmnet standardizes the data. Therefore, no differences were found between the accuracy reported previously and the accuracy with standardization below. In addition, there were no great differences by implementing the min-max normalization.
 
 ```{r model-error-results_normalize, message=FALSE, warning=FALSE, echo=FALSE}
 results_with_normalization
 ```
-The two tables below give a better idea of the accuracy of the model by city. The first table is a confusion and the second in the accuracy by city. Rio de Janeiro had the highest accuracy of all the citys at 82.97% accuracy. 
+
+The tables below shows the accuracy of the model by city. The first table is a confusion matrix, and the second is the accuracy by city. Rio de Janeiro had the highest accuracy of all cities: it presented an accuracy of approximately 83%.
+
 ```{r confusion-matrix, message=FALSE, warning=FALSE, echo=FALSE}
 confusionMat$table
 cityAccuracy
 ```
+
+Finally, the plots below display the coefficient values for the different cities. The figures show that the coefficients may vary considerably depending on the city. For example, the coefficients for Sydney are very different from the coefficients for Cape Town. It shows the variables may exert different degrees of influence in different cities.
 
 ```{r model-results_norm, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 norm <- readPNG("plot/l1_norm_lasso.png")
