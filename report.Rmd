@@ -300,6 +300,9 @@ Variable selection was evaluated using the rfcv() function with a reduced data s
 #   ylab("CV Error") +
 #   geom_point(aes(y = V1)) +
 #   geom_line(aes(y = V1, col = "N = 1 000"))
+
+cvrfplot <- readPNG("plot/cvdfplot.png")
+grid::grid.raster(cvrfplot)
 ```
 
 \maketitle
