@@ -216,44 +216,59 @@ adorn_pct_formatting(digits = 2)
 ```
 
 \maketitle
-\section{Logistic Regression Analysis}
+\section{Results and Analysis}
 
-This report considered classification models to determine the different cities based on the AirBnb data. Seven different classification models were applied to the dataset: (1) lasso logistic regression with default lambda, (2) lasso logistic regression with the lambda selected via cross-validation, (3) ridge logistic regression with default lambda, (4) lasso logistic regression with lambda selected via cross-validation, (5) linear discriminant analysis (LDA), (6) quadratic discriminant analysis (QDA), and (7) logistic regression. 
+\subsection{Standard Classification Techniques}
+
+This report considered classification models to determine the different cities based on the AirBnb data. Seven different classification models were applied to the dataset: (1) lasso logistic regression with default lambda, (2) lasso logistic regression with the lambda selected via cross-validation, (3) ridge logistic regression with default lambda, (4) ridge logistic regression with lambda selected via cross-validation, (5) linear discriminant analysis (LDA), (6) quadratic discriminant analysis (QDA), and (7) logistic regression. 
 
 The dataset was split into two sets: a training dataset with 80% of the data and a test dataset with 20% of the data. The errors were then computed using the test dataset. Out of the seven proposed models, the lasso logistic regression with lambda selected via cross-validation presented the best performance because of its lower error (i.e., higher accuracy).
 
-The plots below show different values of lambda for the lasso and the ridge logistic regressions. It also shows the number of predictors that were used in each model. Lasso performs better because it uses a subset of the predictors, and some of the predictors were not useful in the final model. Therefore, the accuracy of the lasso  model with fewer predictors outperformed the ridge model.
 
 ```{r model-error-results, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 load("data/modelComparison.RData")
-results
+
+knitr::kable(results, col.names = c('Default Lasso', 'CV Lasso', 'Default Ridge', 'CV Ridge', 'LDA', 'QDA', 'Logistic Regression'))
+```
+
+
+The following plots show different values of lambda for the lasso and the ridge logistic regressions. It also shows the number of predictors that were used in each model. Lasso performs better because it uses a subset of the predictors, and some of the predictors were not useful in the final model. Therefore, the accuracy of the lasso  model with fewer predictors outperformed the ridge model.
+
+
+```{r model-comparison-lasso-ridge, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 lasso <- readPNG("plot/glmnet_cv_fit.png")
 grid::grid.raster(lasso)
 ```
 
-Preprocessing was also used to try to increase the model performance.The table below shows the accuracies with different preprocessing techniques. By default, glmnet standardizes the data. Therefore, no differences were found between the accuracy reported previously and the accuracy with standardization below. In addition, there were no great differences by implementing the min-max normalization.
+
+Preprocessing was also used to try to increase the model performance. The following tables shows the accuracies with different preprocessing techniques. By default, glmnet standardizes the data. Therefore, no differences were found between the accuracy reported previously and the accuracy with standardization. In addition, there were no great differences by implementing the min-max normalization.
 
 
 ```{r model-error-results_normalize, message=FALSE, warning=FALSE, echo=FALSE}
-results_with_normalization
+knitr::kable(results_with_normalization, col.names = c('CV Lasso', 'CV Lasso with Standardization', 'CV Lasso with Min-Max Normalization'))
 ```
 
-The tables below shows the accuracy of the model by city. The first table is a confusion matrix, and the second is the accuracy by city. Rio de Janeiro had the highest accuracy of all cities: it presented an accuracy of approximately 83%.
+
+The following tables show the accuracy of the model by city. The first table is a confusion matrix, and the second is the accuracy by city. Rio de Janeiro had the highest accuracy of all cities: it presented an accuracy of approximately 83%.
+
 
 ```{r confusion-matrix, message=FALSE, warning=FALSE, echo=FALSE}
-confusionMat$table
-cityAccuracy
+knitr::kable(confusionMat$table, col.names = c('BNK', 'CPT', 'HKG', 'IST', 'MXC', 'NYC', 'PAR', 'RIO', 'ROM', 'SYD'))
+
+knitr::kable(cityAccuracy, col.names = c('City', 'Accuracy'), digits = 3)
 ```
 
+
 Finally, the plots below display the coefficient values for the different cities. The figures show that the coefficients may vary considerably depending on the city. For example, the coefficients for Sydney are very different from the coefficients for Cape Town. It shows the variables may exert different degrees of influence in different cities.
+
 
 ```{r model-results_norm, message=FALSE, warning=FALSE, echo=FALSE, fig.width = 7}
 norm <- readPNG("plot/l1_norm_lasso.png")
 grid::grid.raster(norm)
 ```
 
-\maketitle
-\section{Random Forest Analysis}
+
+\subsection{Random Forest Analysis}
 
 The most important tuning parameter with regards to random forest is mtry - the number of randomly selected predictors to use when building each individual tree. Greedy descent was performed on mtry, starting at mtry = 1, and adding +1 at each iteration until doing so no longer improved the out of bag error. This analysis, and the following on nodesize, were done using a 10 000 row subset of the original data set in order to decrease computation time. Models with an mtry value of 7 performed slightly better than those with the default parameter of 9. No analysis was done on higher values of mtry.  
 
@@ -306,7 +321,7 @@ grid::grid.raster(cvrfplot)
 ```
 
 \maketitle
-\section{Results}
+\section{Discussions}
 
 ```{r, echo = FALSE}
 # fullrf <- readRDS(file = "fullrf.rds")
@@ -317,3 +332,10 @@ grid::grid.raster(cvrfplot)
 ```
 
 After all the analysis, two random forest models were fitted with mtry set to 7. The first model was fitted over all variables and gave an out-of-bag classification error of 10.01%. The second model was fitted over the 42 variables marked most important by the random forest algorithm in the first model. It achieved an out-of-bag classification error of ##%. The easiest class to classify was Bangkok. The most difficult were Hong Kong and Istanbul, which often were mistaken for each-other. Sidney was also misclassified often as either New York or Paris. Overall, the random forest model performed very well and with minimal adjustments from the default parameters. 
+
+\maketitle
+\section{References}
+
+Thomsen, Chuhan Renee, and Miyoung Jeong. "An analysis of Airbnb online reviews: user experience in 16 US cities." Journal of Hospitality and Tourism Technology (2020).
+
+Zhao, Xinyuan Roy, et al. "The influence of online reviews to online hotel booking intentions." International Journal of Contemporary Hospitality Management (2015).
