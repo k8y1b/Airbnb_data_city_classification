@@ -97,7 +97,7 @@ __Comment__
 
 # Checkpoint 3 grade
 
-__Total__ (65 / 65)
+__Total__ (56 / 65)
 
 __Words__ (8 / 8) The text is laid out cleanly, with clear divisions and
 transitions between sections and sub-sections.  The writing itself is
@@ -109,14 +109,14 @@ __Numbers__ (1 / 1) All numerical results or summaries are reported to
 suitable precision, and with appropriate measures of uncertainty attached when
 applicable.
 
-__Pictures__ (7 / 7) Figures and tables are easy to read, with informative
-captions, axis labels and legends, and are placed near the relevant pieces of
+__Pictures__ (4 / 7) Figures and tables are easy to read, with ~informative
+captions, axis labels and legends~, and are placed near the relevant pieces of
 text.
 
-__Code__ (4 / 4) The code is formatted and organized so that it is easy
-for others to read and understand.  It is indented, commented, and uses
+__Code__ (2 / 4) The code is ~formatted~ and organized so that it is easy
+for others to read and understand.  It is indented, ~commented,~ and uses
 meaningful names.  It only includes computations which are actually needed to
-answer the analytical questions, and avoids redundancy.  Code borrowed from the
+answer the analytical questions, and ~avoids redundancy.~  Code borrowed from the
 notes, from books, or from resources found online is explicitly acknowledged
 and sourced in the comments.  Functions or procedures not directly taken from
 the notes have accompanying tests which check whether the code does what it is
@@ -129,7 +129,7 @@ bivariately. Features/observations are discussed with appropriate
 figure or tables. The relevance of the EDA to the questions and
 potential models is clearly explained.
 
-__Results and analysis__ (25 / 25) The statistical summaries
+__Results and analysis__ (21 / 25) The statistical summaries
 are clearly related to, or possibly derive from, the substantive questions of interest.  Any
 assumptions are checked by means of appropriate diagnostic plots or
 formal tests. Limitations from un-fixable problems are
@@ -146,3 +146,10 @@ conclusions is both clear and convincing.  Contingent answers ("if $X$, then
 $Y$, but if $Z$, then $W$") are likewise described as warranted by the
 and data.  If uncertainties in the data mean the answers to some
 questions must be imprecise, this too is reflected in the conclusions.
+
+__Comment__
+Further justification of the 7 classification methods would be great i.e what makes lasso logistic with lambda selected via CV better than the default? Why QDA over LDA? Stating your throught process will help guide the readers. 
+
+Remove commented out code if not useful; also consider adding more comments in code for clarity. 
+
+Tables will benefit from a table title. Lasso L1 Norm plots are missing the names for each city.
